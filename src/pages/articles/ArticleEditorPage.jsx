@@ -14,7 +14,9 @@ export default function ArticleEditorPage({ mode }) {
   const [summary, setSummary] = useState('');
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
+  const [customPrompt, setCustomPrompt] = useState('');
   const [improving, setImproving] = useState(false);
+  const [applyingPrompt, setApplyingPrompt] = useState(false);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -127,6 +129,29 @@ export default function ArticleEditorPage({ mode }) {
     }
   };
 
+  const handleApplyPrompt = async () => {
+    if (!content.trim() || !customPrompt.trim()) return;
+
+    setApplyingPrompt(true);
+    setError('');
+
+    try {
+      const { data } = await api.post('/ai/apply-prompt', {
+        text: content,
+        prompt: customPrompt,
+      });
+
+      if (data.modified) {
+        setContent(data.modified);
+        setCustomPrompt('');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to apply prompt');
+    } finally {
+      setApplyingPrompt(false);
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
 
   return (
@@ -190,6 +215,27 @@ export default function ArticleEditorPage({ mode }) {
             onChange={setContent}
           />
         </label>
+
+        <div style={{ marginTop: '1rem' }}>
+          <label>
+            Custom Prompt (e.g., "Make this more technical", "Add code examples", "Simplify the language")
+            <textarea
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              placeholder="Enter what changes you want made to your article..."
+              rows={3}
+              maxLength={500}
+            />
+          </label>
+          <button
+            type="button"
+            onClick={handleApplyPrompt}
+            disabled={applyingPrompt || !content.trim() || !customPrompt.trim()}
+            style={{ marginRight: '0.5rem' }}
+          >
+            {applyingPrompt ? 'Applying...' : 'Apply Custom Changes'}
+          </button>
+        </div>
 
         <button
           type="button"
