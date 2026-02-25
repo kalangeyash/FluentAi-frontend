@@ -1,0 +1,9 @@
+# Ignore the file with actual secrets
+.env
+
+# DO NOT ignore the example file (it acts as documentation)
+!.env.example
+
+# Build and dependency folders
+node_modules/
+dist/g
