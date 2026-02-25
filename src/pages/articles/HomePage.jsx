@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/apiClient.js';
+import { formatDate } from '../../utils/dateFormatter.js';
 
 export default function HomePage() {
   const [articles, setArticles] = useState([]);
@@ -45,6 +46,11 @@ export default function HomePage() {
                 <h2>{article.title}</h2>
                 {article.summary && <p>{article.summary}</p>}
               </Link>
+              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85em', color: '#666', marginTop: '0.5rem' }}>
+                {article.author_name && <span>By {article.author_name}</span>}
+                {article.created_at && <span>Created: {formatDate(article.created_at)}</span>}
+                {article.category && <span style={{ color: '#0077cc' }}>{article.category}</span>}
+              </div>
             </li>
           ))}
         </ul>

@@ -12,10 +12,30 @@ export default function ArticleEditorPage({ mode }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [summary, setSummary] = useState('');
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState('');
   const [improving, setImproving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const categoryOptions = [
+    'Tech',
+    'AI',
+    'Backend',
+    'Frontend',
+    'DevOps',
+    'Full Stack',
+    'Web Development',
+    'Mobile Development',
+    'Cloud Computing',
+    'Cybersecurity',
+    'Data Science',
+    'Machine Learning',
+    'Database',
+    'System Design',
+    'Software Architecture',
+  ];
 
   useEffect(() => {
     if (isEdit) {
@@ -24,9 +44,9 @@ export default function ArticleEditorPage({ mode }) {
           const { data } = await api.get(`/articles/${id}`);
           setTitle(data.title);
           setContent(data.content);
-          if (data.summary) {
-            setSummary(data.summary);
-          }
+          if (data.summary) setSummary(data.summary);
+          if (data.category) setCategory(data.category);
+          if (data.tags) setTags(data.tags);
         } catch (err) {
           console.error(err);
           setError('Failed to load article.');
@@ -42,38 +62,44 @@ export default function ArticleEditorPage({ mode }) {
     e.preventDefault();
     setSaving(true);
     setError('');
+
     try {
       let articleResponse;
+      const payload = { title, content, summary, category, tags };
+
       if (isEdit) {
-        const { data } = await api.put(`/articles/${id}`, { title, content, summary });
+        const { data } = await api.put(`/articles/${id}`, payload);
         articleResponse = data;
       } else {
-        const { data } = await api.post('/articles', { title, content, summary });
+        const { data } = await api.post('/articles', payload);
         articleResponse = data;
       }
 
-      // Auto-generate summary if missing, using AI service
+      // Auto-generate summary if missing
       if (!summary && articleResponse?.content) {
         try {
           const { data: summaryData } = await api.post('/ai/summary', {
-            text: articleResponse.content
+            text: articleResponse.content,
           });
+
           const newSummary = summaryData.summary;
+
           if (newSummary) {
             setSummary(newSummary);
-            // Persist generated summary back to the article
+
             await api.put(`/articles/${articleResponse.id}`, {
               title: articleResponse.title,
               content: articleResponse.content,
-              summary: newSummary
+              summary: newSummary,
+              category: articleResponse.category,
+              tags: articleResponse.tags,
             });
           }
         } catch (aiErr) {
-          // Non-fatal: log but do not block save
-          // eslint-disable-next-line no-console
           console.error('Failed to auto-generate summary', aiErr);
         }
       }
+
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save article');
@@ -82,14 +108,15 @@ export default function ArticleEditorPage({ mode }) {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-
   const handleImprove = async () => {
     if (!content.trim()) return;
+
     setImproving(true);
     setError('');
+
     try {
       const { data } = await api.post('/ai/improve', { text: content });
+
       if (data.improved) {
         setContent(data.improved);
       }
@@ -100,9 +127,12 @@ export default function ArticleEditorPage({ mode }) {
     }
   };
 
+  if (loading) return <p>Loading...</p>;
+
   return (
     <div className="page">
       <h1>{isEdit ? 'Edit Article' : 'Create Article'}</h1>
+
       <form className="editor-form" onSubmit={handleSubmit}>
         <label>
           Title
@@ -111,37 +141,82 @@ export default function ArticleEditorPage({ mode }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
+            maxLength={200}
           />
         </label>
+
         <label>
-          Content
-          <ReactQuill theme="snow" value={content} onChange={setContent} />
+          Category
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+          >
+            <option value="">Select category</option>
+            {categoryOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
         </label>
+
         <label>
-          Summary (optional, AI can auto-generate)
+          Tags (comma separated)
           <input
             type="text"
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            placeholder="Short summary of the article"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            maxLength={500}
+            placeholder="react, nodejs, ai"
           />
         </label>
-        {error && <p className="error-text">{error}</p>}
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-          <button
-            type="button"
-            onClick={handleImprove}
-            disabled={improving || !content.trim()}
-            className="secondary-button"
-          >
-            {improving ? 'Improving…' : 'AI Improve Content'}
-          </button>
-        <button type="submit" disabled={saving}>
-          {saving ? 'Saving...' : 'Save'}
+
+        <label>
+          Summary (optional, AI can auto-generate)
+          <textarea
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            maxLength={500}
+            placeholder="Optional summary"
+          />
+        </label>
+
+        <label>
+          Content
+          <ReactQuill
+            theme="snow"
+            value={content}
+            onChange={setContent}
+          />
+        </label>
+
+        <button
+          type="button"
+          onClick={handleImprove}
+          disabled={improving || !content.trim()}
+        >
+          {improving ? 'Improving...' : 'Improve with AI'}
         </button>
-        </div>
+
+        <button
+          type="submit"
+          disabled={
+            saving ||
+            !title.trim() ||
+            !content.trim() ||
+            !category
+          }
+        >
+          {saving
+            ? 'Saving...'
+            : isEdit
+            ? 'Update Article'
+            : 'Create Article'}
+        </button>
+
+        {error && <p className="error">{error}</p>}
       </form>
     </div>
   );
 }
-
