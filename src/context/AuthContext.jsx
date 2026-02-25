@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
   };
 
   const signup = async (payload) => {
-    const { data } = await api.post('/auth/signup', payload);
+    const { data } = await api.post('/auth/register', payload);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     api.defaults.headers.common.Authorization = `Bearer ${data.token}`;

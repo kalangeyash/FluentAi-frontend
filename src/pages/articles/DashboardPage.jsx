@@ -9,8 +9,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchMine = async () => {
       try {
-        const { data } = await api.get('/articles/mine');
-        setArticles(data.articles || data);
+        const { data } = await api.get('/articles', {
+          params: { page: 1, limit: 50 }
+        });
+        const items = Array.isArray(data) ? data : data.items || [];
+        setArticles(items);
       } catch (err) {
         console.error(err);
       } finally {

@@ -13,7 +13,8 @@ export default function HomePage() {
         const { data } = await api.get('/articles', {
           params: query ? { search: query } : {}
         });
-        setArticles(data.articles || data);
+        const items = Array.isArray(data) ? data : data.items || [];
+        setArticles(items);
       } catch (err) {
         console.error(err);
       } finally {
