@@ -213,6 +213,7 @@ export default function ArticleEditorPage({ mode }) {
             theme="snow"
             value={content}
             onChange={setContent}
+            
           />
         </label>
 

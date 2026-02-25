@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../api/apiClient.js';
 import { formatDateTime } from '../../utils/dateFormatter.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const ArticleDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -15,12 +20,30 @@ const ArticleDetailPage = () => {
         setArticle(data);
       } catch (err) {
         console.error(err);
+        setError('Failed to load article');
       } finally {
         setLoading(false);
       }
     };
     fetchArticle();
   }, [id]);
+
+  const isAuthor = user && article && user.id === article.author_id;
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this article?')) return;
+
+    setDeleting(true);
+    setError('');
+
+    try {
+      await api.delete(`/articles/${id}`);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete article');
+      setDeleting(false);
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
   if (!article) return <p>Article not found.</p>;
@@ -82,6 +105,42 @@ const ArticleDetailPage = () => {
           </span>
         )}
 
+      {isAuthor && (
+        <div style={{ marginTop: '2rem', marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
+          <Link
+            to={`/articles/${id}/edit`}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#0077cc',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '4px',
+              fontWeight: 'bold',
+            }}
+          >
+            Edit Article
+          </Link>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: deleting ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              opacity: deleting ? 0.7 : 1,
+            }}
+          >
+            {deleting ? 'Deleting...' : 'Delete Article'}
+          </button>
+        </div>
+      )}
+
+      {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
+
       <SimilarArticlesSection articleId={id} />
     </div>
   );
@@ -99,7 +158,11 @@ function SimilarArticlesSection({ articleId }) {
 
     api
       .get(`/articles/${articleId}/similar`)
-      .then(({ data }) => setSimilar(data.items || []))
+      .then(({ data }) => {
+        // Filter out the current article by ID
+        const filtered = (data.items || []).filter(item => item.id !== parseInt(articleId));
+        setSimilar(filtered);
+      })
       .catch(() => {
         setSimilar([]);
         setError('Failed to fetch similar articles');

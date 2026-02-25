@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api/apiClient.js';
 import { formatDate } from '../../utils/dateFormatter.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const categoryOptions = [
   'Tech',
@@ -22,16 +23,22 @@ const categoryOptions = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [articles, setArticles] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
+    if (!user) return;
+
     const fetchMine = async () => {
       setLoading(true);
       try {
-        const params = { limit: 50 };
+        const params = { limit: 50, author: user.id };
         if (searchQuery) params.search = searchQuery;
         if (selectedCategory) params.category = selectedCategory;
         
@@ -48,7 +55,23 @@ export default function DashboardPage() {
     
     const timeoutId = setTimeout(fetchMine, 300);
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, selectedCategory]);
+  }, [user, searchQuery, selectedCategory]);
+
+  const handleDelete = async (articleId) => {
+    if (!window.confirm('Are you sure you want to delete this article?')) return;
+
+    setDeleting(articleId);
+    setDeleteError('');
+
+    try {
+      await api.delete(`/articles/${articleId}`);
+      setArticles(articles.filter(a => a.id !== articleId));
+      setDeleting(null);
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || 'Failed to delete article');
+      setDeleting(null);
+    }
+  };
 
   return (
     <div className="page">
@@ -115,6 +138,7 @@ export default function DashboardPage() {
             {searchQuery && ` matching "${searchQuery}"`}
             {selectedCategory && ` in ${selectedCategory}`}
           </p>
+          {deleteError && <p style={{ color: 'red', marginBottom: '1rem' }}>{deleteError}</p>}
           <ul className="article-list">
             {articles.map((article) => (
               <li key={article.id || article._id} className="article-card">
@@ -132,13 +156,29 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
-                <Link
-                  to={`/articles/${article.id || article._id}/edit`}
-                  className="secondary-button"
-                  style={{ marginTop: '0.5rem', display: 'inline-block' }}
-                >
-                  Edit
-                </Link>
+                <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                  <Link
+                    to={`/articles/${article.id || article._id}/edit`}
+                    className="secondary-button"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(article.id)}
+                    disabled={deleting === article.id}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: deleting === article.id ? 'not-allowed' : 'pointer',
+                      opacity: deleting === article.id ? 0.7 : 1,
+                    }}
+                  >
+                    {deleting === article.id ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
