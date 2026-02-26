@@ -31,7 +31,7 @@ const ArticleDetailPage = () => {
   const isAuthor = user && article && user.id === article.author_id;
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this article?')) return;
+    if (!window.confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
 
     setDeleting(true);
     setError('');
@@ -45,101 +45,101 @@ const ArticleDetailPage = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (!article) return <p>Article not found.</p>;
+  if (loading) return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>Loading...</div>;
+  if (!article) return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>Article not found.</div>;
 
   return (
-    <div className="page">
-      <h1>{article.title}</h1>
+    <div className="article-detail">
+      <div className="article-detail-header">
+        <h1 className="article-detail-title">{article.title}</h1>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap', fontSize: '0.9em', color: '#666' }}>
-        {article.author_name && (
-          <span style={{ fontWeight: 'bold' }}>
-            By {article.author_name}
-          </span>
-        )}
-        {article.created_at && (
-          <span>Created: {formatDateTime(article.created_at)}</span>
-        )}
-        {article.updated_at && article.created_at !== article.updated_at && (
-          <span>Updated: {formatDateTime(article.updated_at)}</span>
-        )}
-      </div>
-
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem' }}>
-        {article.category && (
-          <span
-            className="article-category"
-            style={{ fontWeight: 'bold', color: '#0077cc' }}
-          >
-            Category: {article.category}
-          </span>
-        )}
-
-        
+        <div className="article-detail-meta">
+          {article.author_name && (
+            <span className="article-detail-meta-item">
+              👤 {article.author_name}
+            </span>
+          )}
+          {article.created_at && (
+            <span className="article-detail-meta-item">
+              📅 Created: {formatDateTime(article.created_at)}
+            </span>
+          )}
+          {article.updated_at && article.created_at !== article.updated_at && (
+            <span className="article-detail-meta-item">
+              ✏️ Updated: {formatDateTime(article.updated_at)}
+            </span>
+          )}
+          {article.category && (
+            <span className="article-category">{article.category}</span>
+          )}
+        </div>
       </div>
 
       {article.summary && (
-        <p className="article-summary">{article.summary}</p>
+        <div style={{ 
+          padding: '1rem 1.5rem', 
+          background: 'rgba(6, 182, 212, 0.1)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '8px',
+          marginBottom: '2rem',
+          color: 'var(--text-secondary)',
+          fontStyle: 'italic'
+        }}>
+          {article.summary}
+        </div>
       )}
 
-      <div
-        className="article-content"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: article.content }}
-      />
+      <div className="article-detail-content" dangerouslySetInnerHTML={{ __html: article.content }} />
       
-      <hr className="border-t border-white my-10" />
       {article.tags && (
-          <span className="article-tags" style={{ color: '#555' }}>
-            Tags:{' '}
+        <div style={{ marginBottom: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '0.75rem', fontSize: '0.9rem', fontWeight: '600' }}>
+            Tags:
+          </p>
+          <div className="article-tags">
             {article.tags
               .split(',')
               .map(tag => tag.trim())
               .filter(Boolean)
               .map(tag => (
-                <span key={tag} style={{ marginRight: 4 }}>
-                  {tag}
+                <span key={tag} className="article-tag">
+                  #{tag}
                 </span>
               ))}
-          </span>
-        )}
+          </div>
+        </div>
+      )}
 
       {isAuthor && (
-        <div style={{ marginTop: '2rem', marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
+        <div className="article-detail-actions">
           <Link
             to={`/articles/${id}/edit`}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#0077cc',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '4px',
-              fontWeight: 'bold',
-            }}
+            className="btn btn-edit"
           >
-            Edit Article
+            ✏️ Edit Article
           </Link>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: deleting ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              opacity: deleting ? 0.7 : 1,
-            }}
+            className="btn btn-delete"
           >
-            {deleting ? 'Deleting...' : 'Delete Article'}
+            {deleting ? 'Deleting...' : '🗑️ Delete Article'}
           </button>
         </div>
       )}
 
-      {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
+      {error && (
+        <div style={{ 
+          padding: '0.75rem 1rem',
+          background: 'rgba(239, 68, 68, 0.1)',
+          borderLeft: '4px solid var(--error-color)',
+          borderRadius: '4px',
+          color: '#fca5a5',
+          marginBottom: '1rem'
+        }}>
+          {error}
+        </div>
+      )}
 
       <SimilarArticlesSection articleId={id} />
     </div>
@@ -171,53 +171,32 @@ function SimilarArticlesSection({ articleId }) {
   }, [articleId]);
 
   return (
-    <div id="similar-articles" style={{ marginTop: '2rem' }}>
-      <h3>Similar Articles</h3>
+    <div className="similar-articles">
+      <h2 className="similar-articles-title">✨ Similar Articles</h2>
 
       {loading ? (
-        <p>Loading...</p>
+        <div style={{ color: 'var(--text-secondary)' }}>Loading similar articles...</div>
       ) : error ? (
-        <p style={{ color: 'red' }}>{error}</p>
+        <div style={{ color: 'var(--text-secondary)' }}>{error}</div>
       ) : similar.length === 0 ? (
-        <p>No similar articles found.</p>
+        <div style={{ color: 'var(--text-secondary)' }}>No similar articles found.</div>
       ) : (
-        <ul>
+        <div className="similar-articles-grid">
           {similar.map(a => (
-            <li key={a.id}>
-              <a
-                href={`/articles/${a.id}`}
-                style={{ fontWeight: 'bold' }}
-              >
-                {a.title}
-              </a>
-
-              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85em', color: '#666', marginTop: '0.25rem' }}>
-                {a.author_name && <span>By {a.author_name}</span>}
-                {a.created_at && <span>{formatDateTime(a.created_at)}</span>}
-                {a.category && <span style={{ color: '#0077cc' }}>{a.category}</span>}
+            <Link 
+              key={a.id} 
+              to={`/articles/${a.id}`}
+              className="similar-article-item"
+            >
+              <h3>{a.title}</h3>
+              {a.summary && <p>{a.summary}</p>}
+              <div style={{ marginTop: 'auto', paddingTop: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                {a.author_name && <div>By {a.author_name}</div>}
+                {a.category && <div style={{ marginTop: '0.25rem' }}>{a.category}</div>}
               </div>
-
-              {a.tags && (
-                <span
-                  style={{ marginLeft: 8, color: '#555', fontSize: '0.85em' }}
-                >
-                  Tags: {a.tags}
-                </span>
-              )}
-
-              {a.summary && (
-                <div
-                  style={{
-                    fontSize: '0.9em',
-                    color: '#333'
-                  }}
-                >
-                  {a.summary}
-                </div>
-              )}
-            </li>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

@@ -14,7 +14,7 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <Link to="/" className="navbar-brand">
-        FluentAI
+        ✨ FluentAI
       </Link>
       <nav className="navbar-links">
         <NavLink to="/" end>
@@ -22,7 +22,7 @@ export default function Navbar() {
         </NavLink>
         {user && (
           <>
-            <NavLink to="/articles/new">New Article</NavLink>
+            <NavLink to="/articles/new">Create</NavLink>
             <NavLink to="/dashboard">Dashboard</NavLink>
           </>
         )}
@@ -30,15 +30,21 @@ export default function Navbar() {
       <div className="navbar-auth">
         {user ? (
           <>
-            <span className="navbar-user">{user.name || user.email}</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: '500' }}>
+              {user.name || user.email}
+            </span>
             <button type="button" onClick={handleLogout}>
               Logout
             </button>
           </>
         ) : (
           <>
-            <NavLink to="/login">Login</NavLink>
-            <NavLink to="/signup">Sign up</NavLink>
+            <Link to="/login" className="navbar-auth-link">
+              Sign In
+            </Link>
+            <Link to="/signup" className="navbar-auth-link">
+              Sign Up
+            </Link>
           </>
         )}
       </div>

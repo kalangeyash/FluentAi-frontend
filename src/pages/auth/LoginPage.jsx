@@ -28,37 +28,49 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-page">
-      <h1>Login</h1>
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <label>
-          Email
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        {error && <p className="error-text">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      <p className="auth-switch">
-        No account? <Link to="/signup">Sign up</Link>
-      </p>
+    <div className="auth-container">
+      <div className="auth-visual">
+        <div className="auth-visual-content">
+          <h2>Welcome Back</h2>
+          <p>Sign in to your account and continue creating amazing content with FluentAI</p>
+        </div>
+      </div>
+      <div className="auth-form-section">
+        <div className="auth-form-wrapper">
+          <h1>Sign In</h1>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <label>
+              Email Address
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                required
+              />
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+              />
+            </label>
+            {error && <p className="error-text">{error}</p>}
+            <button type="submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+          <p className="auth-switch">
+            Don't have an account? <Link to="/signup">Sign up</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -52,50 +52,35 @@ export default function HomePage() {
   }, [searchQuery, selectedCategory]);
 
   return (
-    <div className="page">
+    <div>
       <div className="page-header">
-        <h1>Knowledge Articles</h1>
+        <h1>Explore Articles</h1>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div style={{ flex: 1, minWidth: '250px' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-            Search (Title, Content, Tags)
-          </label>
-          <input
-            type="search"
-            placeholder="Search articles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem' }}
-          />
-        </div>
-
-        <div style={{ minWidth: '200px' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-            Filter by Category
-          </label>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem' }}
-          >
-            <option value="">All Categories</option>
-            {categoryOptions.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
+      <div className="page-controls">
+        <input
+          type="search"
+          placeholder="Search by title, content, or tags..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          <option value="">All Categories</option>
+          {categoryOptions.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
         {(searchQuery || selectedCategory) && (
           <button
             onClick={() => {
               setSearchQuery('');
               setSelectedCategory('');
             }}
-            style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}
           >
             Clear Filters
           </button>
@@ -103,32 +88,51 @@ export default function HomePage() {
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+          <p>Loading articles...</p>
+        </div>
       ) : articles.length === 0 ? (
-        <p>No articles found. Try adjusting your search or filters.</p>
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+          <p>No articles found. Try adjusting your search or filters.</p>
+        </div>
       ) : (
         <div>
-          <p style={{ color: '#666', marginBottom: '1rem' }}>
-            Found {articles.length} article{articles.length !== 1 ? 's' : ''}
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+            Found <strong>{articles.length}</strong> article{articles.length !== 1 ? 's' : ''}
             {searchQuery && ` matching "${searchQuery}"`}
             {selectedCategory && ` in ${selectedCategory}`}
           </p>
           <ul className="article-list">
             {articles.map((article) => (
               <li key={article.id || article._id} className="article-card">
-                <Link to={`/articles/${article.id || article._id}`}>
-                  <h2>{article.title}</h2>
-                  {article.summary && <p>{article.summary}</p>}
-                </Link>
-                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85em', color: '#666', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                  {article.author_name && <span>By {article.author_name}</span>}
-                  {article.created_at && <span>Created: {formatDate(article.created_at)}</span>}
-                  {article.category && <span style={{ color: '#0077cc', fontWeight: 'bold' }}>{article.category}</span>}
+                <div className="article-card-content">
+                  <Link to={`/articles/${article.id || article._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div className="article-card-header">
+                      <h2 className="article-card-title">{article.title}</h2>
+                      {article.category && <span className="article-category">{article.category}</span>}
+                    </div>
+                    {article.summary && <p className="article-summary">{article.summary}</p>}
+                  </Link>
+                  <div className="article-meta">
+                    {article.author_name && <span className="article-meta-item">👤 {article.author_name}</span>}
+                    {article.created_at && <span className="article-meta-item">📅 {formatDate(article.created_at)}</span>}
+                  </div>
                   {article.tags && (
-                    <span style={{ color: '#666' }}>
-                      Tags: {article.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 3).join(', ')}
-                      {article.tags.split(',').length > 3 ? '...' : ''}
-                    </span>
+                    <div className="article-tags">
+                      {article.tags
+                        .split(',')
+                        .map(t => t.trim())
+                        .filter(Boolean)
+                        .slice(0, 3)
+                        .map((tag) => (
+                          <span key={tag} className="article-tag">
+                            #{tag}
+                          </span>
+                        ))}
+                      {article.tags.split(',').length > 3 && (
+                        <span className="article-tag">+{article.tags.split(',').length - 3} more</span>
+                      )}
+                    </div>
                   )}
                 </div>
               </li>

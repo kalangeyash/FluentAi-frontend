@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
+import LandingPage from './pages/LandingPage.jsx';
 import LoginPage from './pages/auth/LoginPage.jsx';
 import SignupPage from './pages/auth/SignupPage.jsx';
 import HomePage from './pages/articles/HomePage.jsx';
@@ -18,10 +19,12 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
+  const { user } = useAuth();
+
   return (
     <MainLayout>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={user ? <HomePage /> : <LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/articles/:id" element={<ArticleDetailPage />} />

@@ -28,47 +28,60 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="auth-page">
-      <h1>Sign up</h1>
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <label>
-          Name
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <label>
-          Email
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        {error && <p className="error-text">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creating account...' : 'Create account'}
-        </button>
-      </form>
-      <p className="auth-switch">
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+    <div className="auth-container">
+      <div className="auth-visual">
+        <div className="auth-visual-content">
+          <h2>Create Your Account</h2>
+          <p>Join thousands of writers and share your story with the world using FluentAI</p>
+        </div>
+      </div>
+      <div className="auth-form-section">
+        <div className="auth-form-wrapper">
+          <h1>Sign Up</h1>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <label>
+              Full Name
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="John Doe"
+                required
+              />
+            </label>
+            <label>
+              Email Address
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                required
+              />
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+              />
+            </label>
+            {error && <p className="error-text">{error}</p>}
+            <button type="submit" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+          <p className="auth-switch">
+            Already have an account? <Link to="/login">Sign In</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
