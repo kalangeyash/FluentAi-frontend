@@ -5,7 +5,7 @@
 Check out the full project walkthrough and usage demo here:
 
 ➡️ Demo Video — FluentAI Knowledge Sharing Platform￼
-
+https://drive.google.com/file/d/19LudBL6Mp0PR9HXD2ifWHpSAYa3O5Uv_/view?usp=sharing
 
 A modern, responsive React frontend for an AI-powered knowledge sharing and content creation platform. Built with Vite, React Router for navigation, and enhanced with AI-powered features for seamless content creation and discovery.
 
